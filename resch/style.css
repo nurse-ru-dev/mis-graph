@@ -1,0 +1,732 @@
+/* ============================================================================
+ * ไฟล์: style.css
+ * หน้าที่: รวมสไตล์ทั้งหมด (สี / ฟอนต์ / เลย์เอาต์ / responsive)
+ * โครงสร้างใหญ่:
+ *   1) :root  → ตัวแปรสี (Design Tokens) – แก้ตรงนี้สีทั้งหน้าจะเปลี่ยน
+ *   2) body / .app  → กรอบหน้าหลัก
+ *   3) .header / .reset-btn → แถบหัวเรื่อง + ปุ่มรีเซ็ตลอย
+ *   4) .kpi-grid / .kpi-card → กล่องตัวเลขสรุป 4 ใบ
+ *   5) .filter-card → แถบตัวกรอง
+ *   6) .chart-grid / .chart-card → กล่องกราฟ
+ *   7) .table-card / table → ตารางข้อมูล
+ *   8) .pagination-bar → แถบเปลี่ยนหน้า
+ *   9) @media → responsive สำหรับจอเล็ก/มือถือ
+ *  10) .footer → ส่วนท้าย
+ * ============================================================================ */
+
+/* นำเข้าฟอนต์ภาษาไทย IBM Plex Sans Thai จาก Google Fonts
+   ★ ถ้าจะเปลี่ยนฟอนต์ → แก้ทั้งบรรทัดนี้ และแก้ font-family ใน body */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+
+
+/* --- ตัวแปรสีหลัก (เปลี่ยนตรงนี้ = เปลี่ยนทั้งหน้า) -------------------------
+ * ★ อยากเปลี่ยนธีมสีน้ำเงิน-ทอง → แก้ค่า --blue-* และ --gold-*
+ * ★ ไม่ควรไปแก้สี hardcode ในไฟล์อื่น ให้แก้ที่นี่ที่เดียว
+ * -------------------------------------------------------------------------- */
+:root {
+  --blue-main: #0d3b66;   /* น้ำเงินหลัก (header, hover ปุ่ม) */
+  --blue-dark: #082b4d;   /* น้ำเงินเข้ม (หัวข้อ) */
+  --blue-light: #174f88;  /* น้ำเงินอ่อน (gradient) */
+  --blue-soft: #eaf3fb;   /* น้ำเงินซีด (พื้นหลัง hover) */
+
+  --gold-main: #d4a017;   /* ทองหลัก (ปุ่มรีเซ็ต, accent) */
+  --gold-dark: #a87900;   /* ทองเข้ม (hover) */
+  --gold-soft: #fff7df;   /* ทองอ่อน (hover แถว) */
+
+  --bg: #f7f9fc;          /* สีพื้นหน้า */
+  --card: #ffffff;        /* สีพื้นกล่อง */
+  --text: #1f2d3d;        /* สีข้อความหลัก */
+  --muted: #6b7280;       /* สีข้อความรอง (เทา) */
+  --border: #dbe4ee;      /* สีเส้นขอบ */
+  --danger: #c62828;      /* สีแดงเตือน (กล่อง > 5 ปี) */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body.is-loading {
+  cursor: progress;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e8eef5 0%, #f7fafd 50%, #e8eef5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 14px;
+}
+
+/* กรอบหน้าหลัก – กว้างสูงสุด 1400px จัดกลาง
+   ★ อยากให้หน้าแคบ/กว้างขึ้น → แก้ค่า 1400px */
+.app {
+  width: min(1400px, 100%);
+  margin: auto;
+  padding: 20px;
+}
+
+/* แถบหัวเรื่อง – พื้น gradient น้ำเงิน
+   ★ อยากเปลี่ยนสีพื้น → แก้ตรง linear-gradient
+   ★ อยากเปลี่ยนความโค้ง → แก้ border-radius */
+.header {
+  background: linear-gradient(135deg, var(--blue-main), var(--blue-light));
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+  box-shadow: 0 12px 30px rgba(13, 59, 102, 0.18);
+  border: 1px solid rgba(212, 160, 23, 0.35);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #ffffff;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* ปุ่ม "รีเซ็ตตัวกรอง" – ลอยที่มุมขวาล่างของหน้าจอ (position: fixed)
+   ★ อยากย้ายตำแหน่ง → แก้ right / bottom
+   ★ อยากเปลี่ยนเป็นปุ่มปกติในเฮดเดอร์ → ลบ position:fixed ออก */
+.floating-reset-tools {
+  position: fixed;
+  right: 24px;
+  top: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-loading-text {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.toggle-reset-btn,
+.reset-btn {
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 12px 28px rgba(13, 59, 102, 0.22);
+  transition: 0.2s ease;
+}
+
+.toggle-reset-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(107, 114, 128, 0.25);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 18px rgba(107, 114, 128, 0.12);
+}
+
+.reset-btn {
+  background: var(--gold-main);
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.toggle-reset-btn:hover,
+.reset-btn:hover {
+  transform: translateY(-2px);
+}
+
+.toggle-reset-btn:hover {
+  background: rgba(107, 114, 128, 0.4);
+}
+
+.reset-btn:hover {
+  background: var(--gold-dark);
+}
+
+.toggle-reset-btn:active,
+.reset-btn:active {
+  transform: scale(0.96);
+}
+
+.floating-reset-tools.collapsed .reset-btn {
+  opacity: 0;
+  width: 0;
+  min-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* กริด KPI – แสดง 4 กล่องในแถวเดียว (จอใหญ่)
+   ★ อยากให้ 3 หรือ 5 กล่อง → แก้ repeat(4, 1fr) เป็น 3 หรือ 5 */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.kpi-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(13, 59, 102, 0.06);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--gold-main);
+}
+
+body.is-loading .kpi-card {
+  position: relative;
+  min-height: 132px;
+}
+
+body.is-loading .kpi-card > * {
+  visibility: hidden;
+}
+
+body.is-loading .kpi-card::before,
+body.is-loading .kpi-card::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e8eef5 0%, #f7fafd 50%, #e8eef5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+body.is-loading .kpi-card::before {
+  top: 22px;
+  width: 52%;
+  height: 15px;
+}
+
+body.is-loading .kpi-card::after {
+  top: 56px;
+  width: 34%;
+  height: 36px;
+}
+
+.kpi-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.kpi-card h2 {
+  margin: 8px 0 0;
+  font-size: 34px;
+  color: var(--blue-main);
+}
+
+.kpi-card.danger h2 {
+  color: var(--danger);
+}
+
+/* แถบตัวกรอง 4 ช่อง (สัดส่วน 1 : 1 : 1 : 2 — ช่องค้นหากว้างสุด)
+   ★ ถ้าเพิ่ม/ลดตัวกรอง → ปรับ grid-template-columns ให้พอดีจำนวนช่อง */
+.filter-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr;
+  gap: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 24px rgba(13, 59, 102, 0.05);
+  border: 1px solid var(--border);
+}
+
+.filter-group label {
+  display: block;
+  font-size: 14px;
+  color: var(--blue-dark);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+body.is-loading .filter-group {
+  position: relative;
+  min-height: 66px;
+}
+
+body.is-loading .filter-group > * {
+  visibility: hidden;
+}
+
+body.is-loading .filter-group::before,
+body.is-loading .filter-group::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e8eef5 0%, #f7fafd 50%, #e8eef5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+body.is-loading .filter-group::before {
+  top: 2px;
+  width: 72px;
+  height: 14px;
+}
+
+body.is-loading .filter-group::after {
+  top: 28px;
+  width: 100%;
+  height: 40px;
+  border-radius: 14px;
+}
+
+select,
+input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  border-color: var(--gold-main);
+  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.16);
+}
+
+/* กริดกราฟ – 2 คอลัมน์ x 2 แถว = 4 กราฟ
+   ★ ถ้าจะเพิ่มกราฟ → เพิ่ม <div class="chart-card"> ใน index.html */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.chart-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px;
+  min-height: 330px;
+  box-shadow: 0 10px 24px rgba(13, 59, 102, 0.05);
+  border: 1px solid var(--border);
+}
+
+body.is-loading .chart-card {
+  position: relative;
+  overflow: hidden;
+}
+
+body.is-loading .chart-card > * {
+  visibility: hidden;
+}
+
+body.is-loading .chart-card::before,
+body.is-loading .chart-card::after {
+  content: '';
+  position: absolute;
+  background: linear-gradient(90deg, #e8eef5 0%, #f7fafd 50%, #e8eef5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+
+body.is-loading .chart-card::before {
+  top: 18px;
+  left: 18px;
+  width: 42%;
+  height: 16px;
+  border-radius: 999px;
+}
+
+body.is-loading .chart-card::after {
+  top: 52px;
+  right: 18px;
+  bottom: 18px;
+  left: 18px;
+  border-radius: 18px;
+}
+
+.chart-card h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  color: var(--blue-dark);
+}
+
+/* canvas ของกราฟ – จำกัดความสูง 270px
+   ★ อยากกราฟใหญ่ขึ้น → เพิ่ม max-height
+   ★ และอาจต้องเพิ่ม min-height ของ .chart-card ด้วย */
+.chart-card canvas {
+  width: 100% !important;
+  max-height: 270px;
+}
+
+.table-card {
+  margin-top: 18px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 10px 24px rgba(13, 59, 102, 0.05);
+  border: 1px solid var(--border);
+}
+
+body.is-loading .table-header,
+body.is-loading .pagination-bar,
+body.is-loading thead {
+  opacity: 0.45;
+}
+
+body.is-loading .table-header,
+body.is-loading .pagination-bar {
+  pointer-events: none;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.table-header h3 {
+  margin: 0;
+  color: var(--blue-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-icon {
+  color: var(--blue-main);
+  font-size: 18px;
+}
+
+.page-size-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.page-size-box select {
+  width: 96px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+
+/* ตาราง: บังคับความกว้างขั้นต่ำ 1180px (เลื่อนซ้าย-ขวาได้ในจอเล็ก)
+   ★ อยากย่อตารางให้พอดีจอ → ลด min-width
+   ★ table-layout: fixed → ใช้ความกว้างคอลัมน์จาก th:nth-child(N) ด้านล่าง */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+  table-layout: fixed;
+  background: #ffffff;
+}
+
+/* ความกว้างของแต่ละคอลัมน์ (ลำดับตาม <th> ใน index.html)
+   ★ ถ้าเพิ่ม/ลบคอลัมน์ → ต้องปรับเลข nth-child ให้ตรง
+   1=ปี / 2=ผู้วิจัย / 3=ชื่อเรื่อง / 4=วารสาร / 5=ฐานข้อมูล /
+   6=ทุน / 7=บทบาท / 8=ลิงก์ */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 72px;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 150px;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 440px;
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+  width: 230px;
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+  width: 130px;
+}
+
+th:nth-child(6),
+td:nth-child(6) {
+  width: 120px;
+}
+
+/* ช่อง "ชื่อเรื่อง" – ตัดข้อความให้แสดงได้สูงสุด 3 บรรทัด แล้วแสดง ...
+   ★ อยากแสดงเต็ม → ลบ -webkit-line-clamp ออก
+   ★ อยากแสดงมาก/น้อยกว่า 3 บรรทัด → แก้ตัวเลข line-clamp */
+td.title-cell {
+  max-width: 430px;
+  min-width: 430px;
+  line-height: 1.45;
+}
+
+.researcher-name {
+  font-weight: 600;
+}
+
+.researcher-role {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.title-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inline-link-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  vertical-align: top;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-actions button {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--blue-main);
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.pagination-actions button:hover:not(:disabled) {
+  background: var(--blue-soft);
+}
+
+.pagination-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#pageInfo {
+  color: var(--blue-dark);
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .table-header,
+  .pagination-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-size-box {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .page-size-box select {
+    width: 120px;
+  }
+}
+
+th {
+  background: var(--blue-main);
+  color: #ffffff;
+  text-align: left;
+  font-size: 14px;
+  padding: 11px 10px;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #edf1f5;
+  font-size: 14px;
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+tbody tr:hover {
+  background: var(--gold-soft);
+}
+
+td.title-cell {
+  max-width: 420px;
+  min-width: 340px;
+}
+
+td a {
+  color: var(--blue-main);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+td a:hover {
+  color: var(--gold-dark);
+  text-decoration: underline;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 30px;
+}
+
+.skeleton-table-row td {
+  padding: 14px 16px;
+}
+
+.skeleton-line-table {
+  width: 100%;
+  height: 16px;
+  border-radius: 10px;
+}
+
+/* === Responsive: ปรับเลย์เอาต์เมื่อจอเล็กลง ============================
+   ★ จุดเปลี่ยน 2 จุด:
+        ≤ 1024px (แท็บเล็ต)  → KPI/กราฟ/ฟิลเตอร์เหลือ 2 คอลัมน์
+        ≤ 680px  (มือถือ)    → ทุกอย่างเหลือ 1 คอลัมน์ + ปรับเฮดเดอร์
+   ★ ถ้าจะเปลี่ยนจุดตัด → แก้ค่า max-width
+======================================================================= */
+@media (max-width: 1024px) {
+  .kpi-grid,
+  .chart-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-card {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .app {
+    padding: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .chart-grid,
+  .filter-card {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-card {
+    padding: 16px;
+  }
+
+  .kpi-card h2 {
+    font-size: 28px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .reset-btn {
+    width: 100%;
+  }
+
+  .floating-reset-tools {
+    position: static;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+/* ส่วนท้ายหน้า (Footer) – ข้อความลิขสิทธิ์ + ผู้พัฒนา */
+.footer {
+  margin-top: 24px;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.footer p {
+  margin: 4px 0;
+}

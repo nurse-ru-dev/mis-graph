@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แดชบอร์ดนักศึกษา</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="students.css" />
+</head>
+<body>
+  <div id="loadingState" class="loading-overlay" style="display:none;">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div>กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+
+  <div id="errorState" class="error-banner" style="display:none;"></div>
+  <main class="main-content compact-page">
+  <header class="topbar compact-topbar">
+    <div>
+      <h1 class="page-title small-title">ข้อมูลนักศึกษา</h1>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="ghost-btn small-btn" id="btnRefresh">รีเฟรชข้อมูลจริง</button>
+    </div>
+  </header>
+  <section class="kpi-grid">
+    <article class="kpi-card">
+      <div class="kpi-label">จำนวนนักศึกษาปัจจุบัน</div>
+      <div class="kpi-value" id="kpiStudents">-</div>
+    </article>
+  </section>
+<section class="content-grid two-col">
+  <!-- ซ้าย -->
+  <article class="panel">
+    <div class="panel-head">
+      <h3>จำนวนนักศึกษาแต่ละชั้นปี</h3>
+      <span class="panel-tag">Current</span>
+    </div>
+    <div class="vertical-chart" id="cohortChart"></div>
+  </article>
+
+  <!-- ขวา -->
+  <article class="panel">
+    <div class="panel-head">
+      <h3>การคงอยู่ของแต่ละชั้นปี</h3>
+      <span class="panel-tag">Retention</span>
+    </div>
+    <div class="retention-chart" id="retentionChart"></div>
+  </article>
+</section>
+</main>
+
+  <script src="students.js" defer></script>
+</body>
+</html>

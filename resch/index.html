@@ -1,0 +1,224 @@
+<!--
+  ============================================================================
+  ไฟล์: index.html
+  หน้าที่: เป็นโครงสร้างหน้าเว็บ Dashboard (HTML structure)
+           ไม่มีข้อมูลหรือสไตล์อยู่ในนี้ — สไตล์อยู่ที่ style.css
+                                         ข้อมูลถูกใส่ภายหลังโดย app.js
+  ============================================================================
+-->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- ★ ถ้าจะเปลี่ยนชื่อ tab ของ browser → แก้ <title> ด้านล่าง -->
+  <title>Research Dashboard</title>
+
+  <!-- ลิงก์ไฟล์สไตล์ (สี / ฟอนต์ / layout) -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- โหลด Chart.js สำหรับวาดกราฟ (ดึงจาก CDN ออนไลน์) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- ===== ส่วนหัว (Header) =====================================
+         ★ ถ้าจะเปลี่ยนชื่อหน้า/ชื่อหน่วยงาน → แก้ <h1> และ <p> ด้านล่าง
+         ★ ปุ่ม "รีเซ็ตตัวกรอง" ลอยอยู่ที่มุมขวาล่าง (กำหนดใน style.css)
+         ============================================================ -->
+    <header class="header">
+      <div>
+        <h1>ระบบรายงานข้อมูลการเผยแพร่งานวิจัย</h1>
+        <p>คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+      </div>
+
+      <div id="floatingResetTools" class="floating-reset-tools">
+        <span id="headerLoadingText" class="header-loading-text" hidden>กำลังโหลด...</span>
+        <button id="toggleResetBtn" class="toggle-reset-btn" type="button" aria-expanded="true" aria-controls="resetBtn">−</button>
+        <button id="resetBtn" class="reset-btn" type="button">รีเซ็ตตัวกรอง</button>
+      </div>
+    </header>
+
+    <!-- ===== KPI Cards (กล่องตัวเลขสรุป 4 ใบ) ====================
+         ตัวเลขในแต่ละกล่อง (id=...) ถูกเติมโดย renderKpis() ใน app.js
+         ★ ถ้าจะเปลี่ยนข้อความหัวกล่อง → แก้ <p>...</p>
+         ★ ถ้าจะเพิ่ม/ลบกล่อง → แก้ทั้ง <div class="kpi-card"> ตรงนี้
+                                และไปแก้ใน renderKpis() ใน app.js ให้สอดคล้อง
+         ============================================================ -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <p>งานวิจัยทั้งหมด</p>
+        <h2 id="totalResearch">0</h2>
+      </div>
+
+      <div class="kpi-card">
+        <p>ผู้วิจัย First Author</p>
+        <h2 id="firstAuthor">0</h2>
+      </div>
+
+      <div class="kpi-card">
+        <p>Corresponding Author</p>
+        <h2 id="correspondingAuthor">0</h2>
+      </div>
+
+      <!-- กล่องสีแดง (class danger) สำหรับเตือนงานวิจัยเก่ากว่า 5 ปี -->
+      <div class="kpi-card danger">
+        <p>งานวิจัยมากกว่า 5 ปี</p>
+        <h2 id="olderThan5">0</h2>
+      </div>
+    </section>
+
+    <!-- ===== แถบตัวกรอง (Filter Card) =============================
+         มี 3 dropdown + 1 ช่องค้นหา
+         รายการในแต่ละ dropdown ถูกเติมอัตโนมัติด้วย initFilters() ใน app.js
+         ★ ถ้าจะเพิ่มตัวกรองใหม่ (เช่น "ทุนวิจัย") →
+            1. เพิ่ม <div class="filter-group"> + <select id="..."> ตรงนี้
+            2. ไปเพิ่ม id ลงใน initFilters() และ applyFilters() ใน app.js
+            3. อาจต้องปรับ grid-template-columns ใน style.css (.filter-card)
+         ============================================================ -->
+    <section class="filter-card">
+      <div class="filter-group">
+        <label>ปี</label>
+        <select id="yearFilter">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>ฐานข้อมูล</label>
+        <select id="indexFilter">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>ชื่อผู้วิจัย</label>
+        <select id="nameFilter">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </div>
+
+      <div class="filter-group search-box">
+        <label>ค้นหา</label>
+        <!-- ค้นหาด้วยข้อความ — ตรวจหลายคอลัมน์พร้อมกัน (ดู applyFilters() ใน app.js) -->
+        <input id="searchInput" type="text" placeholder="ค้นหาชื่อเรื่อง / วารสาร / ผู้วิจัย" />
+      </div>
+    </section>
+
+    <!-- ===== กราฟ 4 ชาร์ต (Charts) ================================
+         ทุก <canvas> จะถูก Chart.js วาดข้อมูลเข้าไป (ดู renderCharts() ใน app.js)
+            • yearLineChart   → กราฟเส้น แนวโน้มจำนวนวิจัยรายปี
+            • indexBarChart   → กราฟแท่งสะสม แยกตามฐานข้อมูล×ปี
+            • indexDonutChart → โดนัท สัดส่วนฐานข้อมูล
+            • publishPieChart → พาย สัดส่วนสถานะ (ตีพิมพ์/โครงร่าง)
+         ★ ถ้าจะเปลี่ยนชนิดกราฟ → แก้ที่ฟังก์ชัน renderXxxChart() ใน app.js
+         ★ ถ้าจะเปลี่ยนชื่อหัวกราฟ → แก้ <h3> ตรงนี้
+         ★ คลิกที่กราฟแต่ละจุดจะกรองข้อมูลอัตโนมัติ (handleChartClick ใน app.js)
+         ============================================================ -->
+    <section class="chart-grid">
+      <div class="chart-card wide">
+        <h3>แนวโน้มจำนวนงานวิจัยรายปี</h3>
+        <canvas id="yearLineChart"></canvas>
+      </div>
+
+      <div class="chart-card wide">
+        <h3>จำนวนงานวิจัยแยกตามฐานข้อมูลรายปี</h3>
+        <canvas id="indexBarChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>สัดส่วนฐานข้อมูลงานวิจัย</h3>
+        <canvas id="indexDonutChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>สัดส่วนสถานะงานวิจัย</h3>
+        <canvas id="publishPieChart"></canvas>
+      </div>
+
+      <div class="chart-card wide">
+        <h3>จำนวนเงินทุนแยกรายปี</h3>
+        <canvas id="fundingAmountChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>สัดส่วนงานวิจัยที่มีทุน / ไม่มีทุน</h3>
+        <canvas id="fundingStatusChart"></canvas>
+      </div>
+    </section>
+
+<!-- ===== ตารางรายละเอียด + Pagination =========================
+     หัวตาราง 6 คอลัมน์: ปี / ชื่อผู้วิจัย / ชื่อเรื่อง / วารสาร / ฐานข้อมูล /
+                         ทุน
+     ★ ถ้าจะเพิ่ม/ลบคอลัมน์ → ต้องแก้ 3 จุด:
+       1. <thead><tr> ตรงนี้ (เพิ่ม/ลบ <th>)
+       2. ฟังก์ชัน renderTable() ใน app.js (เพิ่ม/ลบ <td>)
+       3. ปรับ <td colspan="6"> ในข้อความ "ไม่พบข้อมูล" / "loading"
+       4. ความกว้างคอลัมน์ใน style.css (th:nth-child(N))
+
+     ★ ตัวเลือกจำนวนต่อหน้า (20/50/100/ทั้งหมด) → แก้ <option> ที่ pageSizeSelect
+     ============================================================ -->
+<section class="table-card">
+  <div class="table-header">
+    <h3>
+      <span class="table-icon">▦</span>
+      ตารางข้อมูลรายละเอียดงานวิจัย
+    </h3>
+
+    <div class="page-size-box">
+      <label for="pageSizeSelect">แสดงผล:</label>
+      <select id="pageSizeSelect">
+        <option value="10" selected>10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="all">ทั้งหมด</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ปี พ.ศ.</th>
+          <th>ชื่อผู้วิจัย</th>
+          <th>ชื่อเรื่อง</th>
+          <th>วารสาร</th>
+          <th>ฐานข้อมูล</th>
+          <th>ทุน</th>
+        </tr>
+      </thead>
+      <!-- เนื้อหาตารางถูกสร้างจาก renderTable() ใน app.js -->
+      <tbody id="researchTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- แถบควบคุมหน้าแสดงผล (Pagination) -->
+  <div class="pagination-bar">
+    <p id="tableCount">0 รายการ</p>
+
+    <div class="pagination-actions">
+      <button id="prevPageBtn" type="button">‹ ก่อนหน้า</button>
+      <span id="pageInfo">หน้า 1 / 1</span>
+      <button id="nextPageBtn" type="button">ถัดไป ›</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ส่วนท้ายหน้า (Footer) ============================
+     ★ ถ้าจะเปลี่ยนปี/ผู้พัฒนา → แก้ข้อความใน <p> ตรงนี้
+     ======================================================== -->
+<footer class="footer">
+  <p>© 2026 Faculty of Nursing, Ramkhamhaeng University</p>
+  <p>พัฒนาโดย อาจารย์สิญาธร พลเจริญไพศาล</p>
+</footer>
+
+  </div>
+
+  <!-- โหลดสคริปต์หลัก (ต้องอยู่ล่างสุด เพื่อให้ DOM โหลดเสร็จก่อน) -->
+  <script src="app.js"></script>
+</body>
+</html>

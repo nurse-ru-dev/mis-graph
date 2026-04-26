@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FTES Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="FTES.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="page-intro">
+      <div>
+        <h1 class="hero-title">ภาพรวม FTES</h1>
+        <p class="hero-text">เลือกชุดข้อมูลที่ต้องการดู แล้วใช้ KPI, กราฟ และตารางเพื่อมองภาพรวมของแต่ละชั้นปีอย่างรวดเร็ว</p>
+      </div>
+    </section>
+
+    <section class="toolbar card">
+      <div class="section-head">
+        <div class="section-title">ตัวกรองข้อมูล</div>
+        <div class="section-meta">เลือกแถวที่ต้องการนำเสนอ</div>
+      </div>
+      <div class="toolbar-grid toolbar-grid-2">
+        <div class="field">
+          <label for="openLevelSelect">ชั้นปีที่เปิดสอน</label>
+          <select id="openLevelSelect"></select>
+        </div>
+      </div>
+
+      <div class="toolbar-note" id="summaryText">กำลังโหลดข้อมูล...</div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card blue">
+        <div class="kpi-accent"></div>
+        <div class="kpi-label">รวม FTES สะสม</div>
+        <div class="kpi-value" id="kpiTotalFTES">-</div>
+        <div class="kpi-sub">ดึงจากตาราง FTES_CAL</div>
+      </article>
+
+      <article class="kpi-card green">
+        <div class="kpi-accent"></div>
+        <div class="kpi-label">อาจารย์ที่มี</div>
+        <div class="kpi-value" id="kpiTeacher">-</div>
+        <div class="kpi-sub">ดึงจากตาราง FTES_CAL</div>
+      </article>
+
+      <article class="kpi-card teal">
+        <div class="kpi-accent"></div>
+        <div class="kpi-label">อาจารย์ : FTES</div>
+        <div class="kpi-value" id="kpiRatio">-</div>
+        <div class="kpi-sub">ดึงจากตาราง FTES_CAL</div>
+      </article>
+    </section>
+
+    <section class="chart-grid">
+      <section class="chart-card card">
+        <div class="section-head">
+          <div class="section-title">FTES เทียบ อาจารย์</div>
+          <div class="section-meta">เปรียบเทียบค่าหลักของแถวที่เลือก</div>
+        </div>
+        <div class="chart-wrap small">
+          <canvas id="compareChart"></canvas>
+        </div>
+      </section>
+
+      <section class="chart-card card">
+        <div class="section-head">
+          <div class="section-title">อัตราส่วน FTES / อาจารย์</div>
+          <div class="section-meta">อ่านค่า ratio จากชีตโดยตรง</div>
+        </div>
+        <div class="chart-wrap small">
+          <canvas id="ratioChart"></canvas>
+        </div>
+      </section>
+    </section>
+
+    <section class="content-grid">
+      <section class="card insight-card">
+        <div class="section-head">
+          <div class="section-title">Executive Insight</div>
+          <div class="section-meta">สรุปสั้นสำหรับการนำเสนอ</div>
+        </div>
+        <ul id="insightList" class="insight-list"></ul>
+      </section>
+
+      <section class="card table-card">
+        <div class="section-head">
+          <div class="section-title">ตารางสรุปรายชั้นปี</div>
+          <div class="section-meta">รายละเอียดของรายการที่กำลังแสดง</div>
+        </div>
+        <div class="table-wrap">
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>ปีการศึกษา</th>
+                <th>ชั้นปี</th>
+                <th>SCH รวม</th>
+                <th>FTES</th>
+                <th>อาจารย์</th>
+                <th>จำนวนชั้นปีที่เปิดสอน</th>
+                <th>FTES/อาจารย์</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text">กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="FTES.js"></script>
+</body>
+</html>
