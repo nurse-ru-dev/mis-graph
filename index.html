@@ -4,19 +4,147 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+
+    :root {
+      --blue-main: #0d3b66;
+      --blue-dark: #082b4d;
+      --gold-main: #d4a017;
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --border: #dbe4ee;
+      --text: #1b2a3a;
+      --muted: #6b7a90;
+      --shadow: 0 10px 24px rgba(13, 59, 102, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "IBM Plex Sans Thai", sans-serif;
+    }
+
+    .shell {
+      width: 100%;
+      padding: 0 40px 24px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      margin: 0 -40px 16px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #0d3b66 0%, #0a2f55 100%);
+      border-bottom: 3px solid var(--gold-main);
+      color: #fff;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .topbar p {
+      margin: 2px 0 0;
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .dashboard-card {
+      display: flex;
+      min-height: 104px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--gold-main);
+      border-radius: 20px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      color: var(--blue-dark);
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .dashboard-card::after {
+      content: "เปิด";
+      display: inline-flex;
+      min-width: 54px;
+      height: 36px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #eaf2fb;
+      color: var(--blue-main);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .dashboard-card:hover,
+    .dashboard-card:focus-visible {
+      border-color: var(--gold-main);
+      box-shadow: 0 14px 30px rgba(13, 59, 102, 0.13);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 920px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        padding: 0 20px 20px;
+      }
+
+      .topbar {
+        margin: 0 -20px 12px;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif; padding:40px;">
+<body>
 
-  <h2>เลือกหน้า Dashboard</h2>
+  <main class="shell">
+    <header class="topbar">
+      <h1>เลือกหน้า Dashboard</h1>
+      <p>คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+    </header>
 
-  <p><a href="STUDENT/students.html">📊 ข้อมูลนักศึกษา</a></p>
-  <p><a href="TEACH/lecturers.html">👩‍🏫 อาจารย์ Interactive</a></p>
-  <p><a href="SUBJECT/subject.html"> 🟣 รายวิชาที่เปิดสอน Interactive</a></p>
-  <p><a href="FTES/FTES.html"> 🔴 FTES</a></p>
-  <p><a href="resch/index.html"> 🔴 งานวิจัย</a></p>
-  
-  
-  
+    <section class="dashboard-grid">
+      <a class="dashboard-card" href="stdn/students.html">ข้อมูลนักศึกษา</a>
+      <a class="dashboard-card" href="lect/lecturers.html">อาจารย์ Interactive</a>
+      <a class="dashboard-card" href="sbj/subject.html">รายวิชาที่เปิดสอน Interactive</a>
+      <a class="dashboard-card" href="ftes/FTES.html">FTES</a>
+      <a class="dashboard-card" href="resch/index.html">งานวิจัย</a>
+      <a class="dashboard-card" href="budget/index.html">งบประมาณ</a>
+    </section>
+  </main>
 
 
 </body>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ด้านงบประมาณ — ระบบบุคลากร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://script.google.com" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/chart.js" as="script" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body class="page-wrapper" data-page="budget">
+<main class="main-content">
+    <div id="loading-block" data-loading-label="กำลังเตรียมข้อมูลงบประมาณ..." data-loading-variant="dashboard"></div>
+    <div id="page-content" style="display:none;">
+      <section class="budget-shell">
+        <header class="budget-hero">
+          <div class="budget-hero-copy">
+            <h1 class="page-title">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 .895-4 2s1.79 2 4 2 4 .895 4 2-1.79 2-4 2m0-10V6m0 12v-2m9-4a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              ด้านงบประมาณ
+            </h1>
+            <p>บันทึกประมาณการรายรับและรายจ่าย แสดงผลสรุป กราฟ และจัดการข้อมูลแบบ popup โดยใช้ Google Sheets เป็นฐานข้อมูลหลัก</p>
+          </div>
+
+          <div class="budget-hero-tools">
+            <div class="budget-tool-card">
+              <label for="budgetYearSelect">ปีงบประมาณ</label>
+              <select id="budgetYearSelect" class="form-control"></select>
+            </div>
+
+            <div class="budget-hero-actions">
+              <button id="btnReload" class="btn budget-btn-ghost" type="button">โหลดใหม่</button>
+              <button id="btnOpenGuide" class="btn budget-btn-ghost" type="button">วิธีใช้งาน</button>
+              <button id="btnOpenClone" class="btn budget-btn-ghost" type="button">Clone ปีงบ</button>
+              <button id="btnOpenAddModal" class="btn budget-btn-light" type="button">+ สร้างปีงบ</button>
+            </div>
+          </div>
+        </header>
+
+        <div id="budgetStatusBar" class="budget-status"></div>
+
+        <section class="budget-stats-grid">
+          <article class="budget-stat-card">
+            <span class="budget-stat-label">รายรับรวม</span>
+            <strong class="budget-stat-value" id="totalIncome">0</strong>
+          </article>
+          <article class="budget-stat-card">
+            <span class="budget-stat-label">รายจ่ายรวม</span>
+            <strong class="budget-stat-value" id="totalExpense">0</strong>
+          </article>
+          <article class="budget-stat-card">
+            <span class="budget-stat-label">ดุลสุทธิ</span>
+            <strong class="budget-stat-value" id="netBalance">0</strong>
+            <span class="budget-stat-hint" id="netHint"></span>
+          </article>
+          <article class="budget-stat-card">
+            <span class="budget-stat-label">ปีงบประมาณ</span>
+            <strong class="budget-stat-value" id="budgetYearStat">-</strong>
+            <span class="budget-stat-hint">ปีที่กำลังแสดงข้อมูล</span>
+          </article>
+        </section>
+
+        <section class="budget-insight-grid">
+          <article class="card budget-panel-card budget-insight-card">
+            <div class="budget-panel-body budget-insight-body">
+              <div class="budget-focus-pill" id="budgetFocusPill">ภาพรวมทั้งปี</div>
+              <div class="budget-insight-line">
+                <strong class="budget-insight-value" id="budgetInsightValue">ยังไม่ได้เลือกจุดวิเคราะห์</strong>
+                <span class="budget-insight-text" id="budgetInsightText">คลิกกราฟเพื่อเจาะดูจุดสำคัญได้ทันที</span>
+              </div>
+              <div class="budget-insight-actions">
+                <button id="btnBudgetClearFocus" class="btn budget-btn-ghost" type="button">ล้างการเลือก</button>
+                <button id="btnBudgetOpenForecastYear" class="btn btn-primary" type="button" disabled>เปิดปีที่เลือก</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="budget-workspace">
+          <article class="card budget-panel-card budget-section-card">
+            <div class="budget-panel-head">
+              <h2>ภาพรวมและแนวโน้ม</h2>
+              <p>ใช้กราฟด้านล่างเพื่อดูภาพรวมงบและปีที่ควรติดตาม แล้วเลื่อนลงดูตารางรายรับต่อทันที</p>
+            </div>
+            <div class="budget-panel-body budget-section-body">
+              <div class="budget-chart-grid">
+                <section class="budget-chart-group">
+                  <div class="budget-chart-head">
+                    <h3>รายรับ / รายจ่าย / ดุลสุทธิ</h3>
+                    <p>คลิกแท่งกราฟเพื่อโฟกัส metric ที่ต้องการ</p>
+                  </div>
+                  <div class="budget-chart-panel">
+                    <canvas id="barChart" height="140" tabindex="0" aria-label="กราฟภาพรวมงบประมาณแบบ interactive"></canvas>
+                  </div>
+                </section>
+                <section class="budget-chart-group">
+                  <div class="budget-chart-head">
+                    <h3>แผนการเงินล่วงหน้า 3 ปี</h3>
+                    <p>คลิกจุดหรือปีที่สนใจเพื่อเทียบสถานะงบและเปิดดูปีนั้นต่อ</p>
+                  </div>
+                  <div class="budget-chart-panel">
+                    <canvas id="forecastChart" height="140" tabindex="0" aria-label="กราฟแนวโน้มงบประมาณล่วงหน้าแบบ interactive"></canvas>
+                  </div>
+                </section>
+              </div>
+              <div class="budget-table-card">
+                <div class="budget-panel-head">
+                  <div>
+                    <h2>ตารางรายรับ</h2>
+                    <p id="incomeTableHint">รายรับจากค่าเทอมและรายได้อื่น</p>
+                  </div>
+                </div>
+                <div class="budget-panel-body budget-table-body">
+                  <div class="budget-table-wrap">
+                    <table class="budget-table">
+                      <thead>
+                        <tr>
+                          <th>จัดการ</th>
+                          <th>ชื่อรายการ</th>
+                          <th>ภาคเรียน</th>
+                          <th>รุ่น</th>
+                          <th>ชั้นปี</th>
+                          <th>ภาค</th>
+                          <th>ค่าเทอม/คน</th>
+                          <th>จำนวนนักศึกษา</th>
+                          <th>จำนวนเงิน</th>
+                          <th>หมายเหตุ</th>
+                        </tr>
+                      </thead>
+                      <tbody id="incomeTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card budget-panel-card budget-section-card">
+            <div class="budget-panel-head">
+              <h2>วิเคราะห์รายจ่าย</h2>
+              <p>คลิกกราฟรายจ่ายเพื่อกรองหมวด แล้วดูรายละเอียดในตารางรายจ่ายที่อยู่ถัดลงมา</p>
+            </div>
+            <div class="budget-panel-body budget-section-body">
+              <div class="budget-chart-grid">
+                <section class="budget-chart-group">
+                  <div class="budget-chart-head">
+                    <h3>สัดส่วนรายจ่ายแบบแยกรายการ</h3>
+                    <p>คลิกชิ้นกราฟหรือ legend เพื่อกรองเฉพาะหมวดที่ต้องการวิเคราะห์</p>
+                  </div>
+                  <div class="budget-chart-panel">
+                    <canvas id="doughnutChartDetail" height="140" tabindex="0" aria-label="กราฟสัดส่วนรายจ่ายแบบละเอียดแบบ interactive"></canvas>
+                  </div>
+                </section>
+
+                <section class="budget-chart-group">
+                  <div class="budget-chart-head">
+                    <h3>สัดส่วนรายจ่ายตามแผนรวม</h3>
+                    <p>ใช้ ก.แผนงานจัดการศึกษา (รวม) เทียบกับแผนอื่น ๆ โดยไม่บวกรายการย่อยซ้ำ</p>
+                  </div>
+                  <div class="budget-chart-panel">
+                    <canvas id="doughnutChartSummary" height="140" tabindex="0" aria-label="กราฟสัดส่วนรายจ่ายรวมแบบ interactive"></canvas>
+                  </div>
+                </section>
+              </div>
+              <div class="budget-table-card">
+                <div class="budget-panel-head">
+                  <div>
+                    <h2>ตารางรายจ่าย</h2>
+                    <p id="expenseTableHint">รายการงบรายจ่ายที่ใช้งานอยู่</p>
+                  </div>
+                </div>
+                <div class="budget-panel-body budget-table-body">
+                  <div class="budget-table-wrap">
+                    <table class="budget-table">
+                      <thead>
+                        <tr>
+                          <th>จัดการ</th>
+                          <th>ชื่อรายการ</th>
+                          <th>จำนวนเงิน</th>
+                          <th>ลำดับ</th>
+                          <th>หมายเหตุ</th>
+                        </tr>
+                      </thead>
+                      <tbody id="expenseTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </section>
+    </div>
+  </main>
+<div id="budgetRowModal" class="budget-modal hidden" aria-hidden="true">
+    <div class="budget-modal-backdrop" data-budget-close="budgetRowModal"></div>
+    <div class="budget-modal-card budget-modal-lg">
+      <div class="budget-modal-header">
+        <h3 id="rowModalTitle">เพิ่มรายการ</h3>
+        <button class="budget-icon-btn" type="button" data-budget-close="budgetRowModal">✕</button>
+      </div>
+      <div class="budget-modal-body">
+        <form id="rowForm" class="budget-form-grid">
+          <input type="hidden" id="rowId">
+
+          <div class="budget-field">
+            <label for="budgetYearInput">ปีงบประมาณ</label>
+            <input type="text" id="budgetYearInput" class="form-control" required>
+          </div>
+
+          <div class="budget-field">
+            <label for="categoryType">ประเภท</label>
+            <select id="categoryType" class="form-control" required>
+              <option value="INCOME">INCOME</option>
+              <option value="EXPENSE">EXPENSE</option>
+            </select>
+          </div>
+
+          <div class="budget-field budget-field-wide">
+            <label for="categoryName">ชื่อรายการ</label>
+            <select id="categoryName" class="form-control" required>
+              <option value="ค่าธรรมเนียมการศึกษา">ค่าธรรมเนียมการศึกษา</option>
+              <option value="รายได้จากการบริการวิชาการ">รายได้จากการบริการวิชาการ</option>
+              <option value="รายได้อื่น ๆ (PN)">รายได้อื่น ๆ (PN)</option>
+              <option value="ค่ารับสมัคร">ค่ารับสมัคร</option>
+              <option value="ก.แผนงานจัดการศึกษา (งบบุคลากร)">ก.แผนงานจัดการศึกษา (งบบุคลากร)</option>
+              <option value="ก.แผนงานจัดการศึกษา (การจัดการเรียนการสอน)">ก.แผนงานจัดการศึกษา (การจัดการเรียนการสอน)</option>
+              <option value="ข.แผนงานบริการวิชาการแก่สังคม">ข.แผนงานบริการวิชาการแก่สังคม</option>
+              <option value="ค.แผนงานอนุรักษ์ ส่งเสริมและพัฒนาศาสนา ศิลปะและวัฒนธรรม">ค.แผนงานอนุรักษ์ ส่งเสริมและพัฒนาศาสนา ศิลปะและวัฒนธรรม</option>
+              <option value="ง.แผนงานสนับสนุนวิชาการ">ง.แผนงานสนับสนุนวิชาการ</option>
+              <option value="จ.แผนงานวิจัย">จ.แผนงานวิจัย</option>
+            </select>
+          </div>
+
+          <div class="budget-field">
+            <label for="termLabel">ภาคเรียน</label>
+            <input type="text" id="termLabel" class="form-control" readonly>
+          </div>
+
+          <div class="budget-field">
+            <label for="cohortCode">รุ่น</label>
+            <input type="number" id="cohortCode" class="form-control" min="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="studyYear">ชั้นปี</label>
+            <input type="number" id="studyYear" class="form-control" min="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="semester">ภาคเรียน</label>
+            <input type="number" id="semester" class="form-control" min="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="studentCount">จำนวนนักศึกษาในชั้นปีนั้น ๆ</label>
+            <input type="number" id="studentCount" class="form-control" min="0" value="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="feeRate">จำนวนค่าเทอมต่อคน (บาท)</label>
+            <input type="number" id="feeRate" class="form-control" min="0" value="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="amount">จำนวนเงิน</label>
+            <input type="number" id="amount" class="form-control" min="0" value="0">
+          </div>
+
+          <div class="budget-field">
+            <label for="sortOrder">ลำดับ</label>
+            <input type="number" id="sortOrder" class="form-control" min="0" readonly>
+          </div>
+
+          <div class="budget-field budget-field-wide">
+            <label for="remark">หมายเหตุ</label>
+            <input type="text" id="remark" class="form-control">
+          </div>
+        </form>
+      </div>
+      <div class="budget-modal-footer">
+        <button type="button" id="btnResetForm" class="btn btn-secondary">ล้างฟอร์ม</button>
+        <button type="button" id="btnSaveRow" class="btn btn-primary">บันทึกแถวนี้</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="budgetGuideModal" class="budget-modal hidden" aria-hidden="true">
+    <div class="budget-modal-backdrop" data-budget-close="budgetGuideModal"></div>
+    <div class="budget-modal-card">
+      <div class="budget-modal-header">
+        <h3>วิธีใช้งาน</h3>
+        <button class="budget-icon-btn" type="button" data-budget-close="budgetGuideModal">✕</button>
+      </div>
+      <div class="budget-modal-body budget-guide-list">
+        <div class="budget-guide-item"><span>1</span><p>เลือกปีงบประมาณเพื่อโหลดข้อมูลทั้งหมดของปีนั้น</p></div>
+        <div class="budget-guide-item"><span>2</span><p>กด “สร้างปีงบ” เพื่อเตรียม template มาตรฐานของปีนั้น หรือใช้ Clone ปีงบจากปีเดิม</p></div>
+        <div class="budget-guide-item"><span>3</span><p>กด “แก้ไข” ที่แถวข้อมูลเพื่อปรับค่า แล้วหน้าเว็บจะคำนวณยอดรวมและกราฟให้ทันที</p></div>
+        <div class="budget-guide-item"><span>4</span><p>ค่าธรรมเนียมการศึกษาจะคำนวณจาก ค่าเทอมต่อคน x จำนวนนักศึกษา ส่วนรายการอื่นใช้จำนวนเงินที่กรอก</p></div>
+        <div class="budget-guide-item"><span>5</span><p>การลบเป็นแบบ soft delete โดยเปลี่ยน IS_ACTIVE เป็น FALSE</p></div>
+      </div>
+      <div class="budget-modal-footer">
+        <button type="button" class="btn btn-primary" data-budget-close="budgetGuideModal">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="budgetCloneModal" class="budget-modal hidden" aria-hidden="true">
+    <div class="budget-modal-backdrop" data-budget-close="budgetCloneModal"></div>
+    <div class="budget-modal-card">
+      <div class="budget-modal-header">
+        <h3>Clone ปีงบ</h3>
+        <button class="budget-icon-btn" type="button" data-budget-close="budgetCloneModal">✕</button>
+      </div>
+      <div class="budget-modal-body budget-clone-grid">
+        <div class="budget-field">
+          <label for="cloneSourceYear">ปีต้นทาง</label>
+          <select id="cloneSourceYear" class="form-control"></select>
+        </div>
+        <div class="budget-field">
+          <label for="cloneTargetYear">ปีปลายทาง</label>
+          <input type="text" id="cloneTargetYear" class="form-control" placeholder="เช่น 2572">
+        </div>
+      </div>
+      <div class="budget-modal-footer">
+        <button id="btnCloneCancel" class="btn btn-secondary" type="button">ยกเลิก</button>
+        <button id="btnCloneConfirm" class="btn btn-primary" type="button">ยืนยัน Clone</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="budgetCreateYearModal" class="budget-modal hidden" aria-hidden="true">
+    <div class="budget-modal-backdrop" data-budget-close="budgetCreateYearModal"></div>
+    <div class="budget-modal-card">
+      <div class="budget-modal-header">
+        <h3>สร้างปีงบประมาณ</h3>
+        <button class="budget-icon-btn" type="button" data-budget-close="budgetCreateYearModal">✕</button>
+      </div>
+      <div class="budget-modal-body">
+        <div class="budget-field">
+          <label for="createBudgetYearInput">ปีงบประมาณ</label>
+          <input type="text" id="createBudgetYearInput" class="form-control" placeholder="เช่น 2569">
+        </div>
+      </div>
+      <div class="budget-modal-footer">
+        <button id="btnCreateYearCancel" class="btn btn-secondary" type="button">ยกเลิก</button>
+        <button id="btnCreateYearConfirm" class="btn btn-primary" type="button">สร้างปีงบ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แดชบอร์ดอาจารย์ Interactive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="lecturers.css" />
+</head>
+<body>
+  <div id="loadingState" class="loading-overlay" style="display:none;">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div>กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+
+  <div id="errorState" class="error-banner" style="display:none;"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">สัดส่วนอาจารย์ต่อนักศึกษา</h1>
+        <p class="page-subtitle">คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="ghost-btn" id="btnRefresh">รีเฟรชข้อมูลจริง</button>
+      </div>
+    </header>
+
+    <section class="hero-panel">
+      <div class="hero-text">
+        <div class="eyebrow">Lecturer Dashboard</div>
+        <h2>สัดส่วนอาจารย์ต่อนักศึกษา ตามเกณฑ์ 1:8</h2>
+        <p>ทดลองเพิ่มอาจารย์ ปรับจำนวนนักศึกษา และจำลองรับนักศึกษาใหม่ได้ทันที</p>
+      </div>
+      <div class="hero-target">
+        <div class="target-label">เกณฑ์เป้าหมาย</div>
+        <div class="target-value">1 : 8</div>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <div class="kpi-label">จำนวนอาจารย์ปัจจุบัน</div>
+        <div class="kpi-value" id="kpiLecturers">-</div>
+      </article>
+
+      <article class="kpi-card highlight">
+        <div class="kpi-label">สัดส่วนปัจจุบัน</div>
+        <div class="kpi-value" id="kpiRatio">-</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-label">รับเพิ่มได้โดยไม่ต้องจ้างเพิ่ม</div>
+        <div class="kpi-value" id="kpiCapacity">-</div>
+        <div class="kpi-foot">จำนวนรับนักศึกษาใหม่ที่ยังอยู่ในเกณฑ์</div>
+      </article>
+
+      <article class="kpi-card danger">
+        <div class="kpi-label">ถ้ารับตามแผน ต้องจ้างเพิ่ม</div>
+        <div class="kpi-value" id="kpiNeedLecturers">-</div>
+        <div class="kpi-foot">คำนวณจากค่าจำลองปัจจุบัน</div>
+      </article>
+    </section>
+
+<section class="content-grid two-col interactive-row">
+  <article class="panel scenario-panel">
+    <div class="panel-head">
+      <h3>โหมดจำลองสถานการณ์</h3>
+      <span class="panel-tag">Interactive</span>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-box">
+        <label class="scenario-label">จำนวนอาจารย์ที่ใช้คำนวณ</label>
+        <div class="scenario-input-row">
+          <button class="step-btn" data-step-target="lecturers" data-step="-1">−</button>
+          <input type="number" id="inputLecturers" min="0" step="1">
+          <button class="step-btn" data-step-target="lecturers" data-step="1">+</button>
+        </div>
+        <div class="scenario-note">ปรับเพื่อจำลองกรณีเพิ่มหรือขาดอาจารย์</div>
+      </div>
+
+      <div class="scenario-box">
+        <label class="scenario-label">จำนวนนักศึกษาปัจจุบันที่ใช้คำนวณ</label>
+        <div class="scenario-input-row">
+          <button class="step-btn" data-step-target="students" data-step="-1">−</button>
+          <input type="number" id="inputStudents" min="0" step="1">
+          <button class="step-btn" data-step-target="students" data-step="1">+</button>
+        </div>
+        <div class="scenario-note">ใช้จำลองกรณีจำนวนนักศึกษาปัจจุบันเปลี่ยน</div>
+      </div>
+
+      <div class="scenario-box">
+        <label class="scenario-label">แผนรับนักศึกษาใหม่</label>
+        <div class="scenario-input-row">
+          <button class="step-btn" data-step-target="plannedIntake" data-step="-5">−</button>
+          <input type="number" id="inputPlannedIntake" min="0" step="1">
+          <button class="step-btn" data-step-target="plannedIntake" data-step="5">+</button>
+        </div>
+        <div class="scenario-note">เมื่อปรับแล้ว จำนวนอาจารย์ที่ต้องจ้างเพิ่มจะเปลี่ยนทันที</div>
+      </div>
+    </div>
+
+    <div class="scenario-actions">
+      <button class="primary-btn" id="btnApplyScenario">คำนวณใหม่ทันที</button>
+      <button class="ghost-btn" id="btnResetScenario">กลับเป็นค่าจริงจากระบบ</button>
+    </div>
+  </article>
+
+  <article class="panel ratio-panel">
+    <div class="panel-head">
+      <h3>มาตรวัดสัดส่วนอาจารย์ต่อนักศึกษา</h3>
+      <span class="panel-tag">1 : X</span>
+    </div>
+    <div class="gauge-box-simple">
+      <div class="gauge-value-big" id="gaugeRatioText">-</div>
+      <div class="gauge-subtext" id="gaugeStatusText">เกณฑ์เป้าหมายไม่เกิน 1 : 8</div>
+    </div>
+  </article>
+</section>
+  </main>
+
+  <script src="lecturers.js" defer></script>
+</body>
+</html>

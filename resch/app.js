@@ -17,7 +17,7 @@
 /* --- URL ของ Web App (ได้จากการ Deploy code.gs เป็น Web App) ---------------
  * ★ ถ้า Deploy ใหม่ → ต้องอัปเดต URL ตรงนี้ ไม่งั้นหน้าเว็บจะโหลดข้อมูลไม่ได้
  * -------------------------------------------------------------------------- */
-const API_URL = 'https://script.google.com/macros/s/AKfycbyhLQP4EV7h4Ndrp7IOs4EJQC2hmX-Tykju-OFzN2ywP7PITC5bD7xfbCZ2lXmNEIGE/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyP9dsRXysUbrbEVbhcZTiCc6Hf4ykpyFlYQ6qGxJ13q8OqZu9CUP_-aKfgV-ZvLW5J3g/exec';
 
 
 /* --- ตัวแปรกลาง (state) ใช้ร่วมกันทั้งไฟล์ -------------------------------- */
@@ -33,6 +33,7 @@ let chartFilter = {
   publishStatus: '',
   fundingStatus: ''
 };
+let activeChartSelection = '';
 
 /* --- Plugin Chart.js: แสดงตัวเลขกำกับบนกราฟ --------------------------------
  * วาดตัวเลขเหนือแท่ง / บนชิ้นวงกลม หลัง Chart.js วาดเสร็จ
@@ -177,6 +178,7 @@ function initFilters() {
   fillSelect('yearFilter', uniqueValues(rawData.map(r => r.YEAR)).sort());
   fillSelect('indexFilter', uniqueValues(rawData.map(r => r.INDEX_STATUS)).sort());
   fillSelect('nameFilter', uniqueValues(rawData.map(r => r.NAME)).sort());
+  fillSelect('majorFilter', uniqueValues(rawData.map(r => r.MAJOR)).sort());
 }
 
 // helper: ใส่ <option> ลงใน <select> ตาม id ที่ระบุ
@@ -216,27 +218,17 @@ function uniqueValues(arr) {
 function bindEvents() {
 
   // 1) เมื่อเปลี่ยน dropdown ตัวกรอง → กรองใหม่
-  ['yearFilter', 'indexFilter', 'nameFilter'].forEach(id => {
-    document.getElementById(id).addEventListener('change', applyFilters);
+  ['yearFilter', 'indexFilter', 'nameFilter', 'majorFilter'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyManualFilters);
   });
 
   // 2) เมื่อพิมพ์ค้นหา → กรองใหม่ทันที
   document.getElementById('searchInput')
-    .addEventListener('input', applyFilters);
+    .addEventListener('input', applyManualFilters);
 
   // 3) ปุ่มรีเซ็ต: ล้างทุก filter แล้วกรองใหม่
   document.getElementById('resetBtn')
-    .addEventListener('click', () => {
-      document.getElementById('yearFilter').value = '';
-      document.getElementById('indexFilter').value = '';
-      document.getElementById('nameFilter').value = '';
-      document.getElementById('searchInput').value = '';
-
-      chartFilter.publishStatus = '';
-      chartFilter.fundingStatus = '';
-
-      applyFilters();
-    });
+    .addEventListener('click', resetFilters);
 
   document.getElementById('toggleResetBtn')
     .addEventListener('click', toggleResetTools);
@@ -261,6 +253,90 @@ function bindEvents() {
       renderTable();
     }
   });
+
+  bindTableDragScroll();
+}
+
+function applyManualFilters() {
+  activeChartSelection = '';
+  applyFilters();
+}
+
+function resetFilters() {
+  document.getElementById('yearFilter').value = '';
+  document.getElementById('indexFilter').value = '';
+  document.getElementById('nameFilter').value = '';
+  document.getElementById('majorFilter').value = '';
+  document.getElementById('searchInput').value = '';
+
+  chartFilter.publishStatus = '';
+  chartFilter.fundingStatus = '';
+  activeChartSelection = '';
+
+  applyFilters();
+}
+
+function bindTableDragScroll() {
+  const tableWrap = document.querySelector('.table-wrap');
+  if (!tableWrap) return;
+
+  let isDragging = false;
+  let didDrag = false;
+  let startX = 0;
+  let startY = 0;
+  let scrollLeft = 0;
+  let scrollTop = 0;
+
+  tableWrap.addEventListener('pointerdown', event => {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target.closest('a, button, input, select, textarea')) return;
+
+    isDragging = true;
+    didDrag = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    scrollLeft = tableWrap.scrollLeft;
+    scrollTop = tableWrap.scrollTop;
+
+    tableWrap.classList.add('is-dragging');
+    tableWrap.setPointerCapture?.(event.pointerId);
+  });
+
+  tableWrap.addEventListener('pointermove', event => {
+    if (!isDragging) return;
+
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+
+    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+      didDrag = true;
+    }
+
+    tableWrap.scrollLeft = scrollLeft - deltaX;
+    tableWrap.scrollTop = scrollTop - deltaY;
+
+    if (didDrag) {
+      event.preventDefault();
+    }
+  });
+
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(eventName => {
+    tableWrap.addEventListener(eventName, event => {
+      if (!isDragging) return;
+
+      isDragging = false;
+      tableWrap.classList.remove('is-dragging');
+      tableWrap.releasePointerCapture?.(event.pointerId);
+    });
+  });
+
+  tableWrap.addEventListener('click', event => {
+    if (!didDrag) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    didDrag = false;
+  }, true);
 }
 
 function toggleResetTools() {
@@ -284,6 +360,7 @@ function applyFilters() {
   const year = document.getElementById('yearFilter').value;
   const index = document.getElementById('indexFilter').value;
   const name = document.getElementById('nameFilter').value;
+  const major = document.getElementById('majorFilter').value;
   const search = document.getElementById('searchInput')
     .value.toLowerCase().trim();
 
@@ -291,6 +368,7 @@ function applyFilters() {
     const matchYear = !year || String(row.YEAR) === year;
     const matchIndex = !index || String(row.INDEX_STATUS) === index;
     const matchName = !name || String(row.NAME) === name;
+    const matchMajor = !major || String(row.MAJOR) === major;
 
     const publishText = normalizePublishStatus(row.PUBLISH_STATUS);
     const matchPublish =
@@ -308,6 +386,7 @@ function applyFilters() {
       row.TITLE,
       row.JOURNAL,
       row.INDEX_STATUS,
+      row.MAJOR,
       row.PUBLISH_STATUS,
       row.FUNDING,
       row.FUND_SOURCE,
@@ -320,6 +399,7 @@ function applyFilters() {
       matchYear &&
       matchIndex &&
       matchName &&
+      matchMajor &&
       matchPublish &&
       matchFunding &&
       matchSearch
@@ -390,6 +470,7 @@ function isYes(value) {
 function renderCharts() {
   renderYearLineChart();    // กราฟเส้น
   renderIndexBarChart();    // กราฟแท่งสะสม
+  renderMajorBarChart();    // กราฟแท่งแยกสาขาวิชา
   renderIndexDonutChart();  // กราฟโดนัท
   renderPublishPieChart();  // กราฟพาย
   renderFundingAmountChart(); // กราฟแท่งจำนวนเงินทุน
@@ -493,6 +574,43 @@ function renderPublishPieChart() {
     data: {
       labels,
       datasets: [{ data }]
+    }
+  });
+}
+
+/* --- renderMajorBarChart: กราฟแท่ง จำนวนงานวิจัยแยกตามสาขาวิชา ---------- */
+function renderMajorBarChart() {
+  const grouped = countBy(filteredData, 'MAJOR');
+  const labels = Object.keys(grouped).sort((a, b) => grouped[b] - grouped[a]);
+  const data = labels.map(label => grouped[label]);
+
+  createOrUpdateChart('majorBarChart', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'จำนวนงานวิจัย',
+        data,
+        backgroundColor: '#2a9d8f',
+        borderColor: '#1f776d',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        },
+        y: {
+          grid: {
+            display: false
+          }
+        }
+      }
     }
   });
 }
@@ -812,6 +930,19 @@ function createOrUpdateChart(canvasId, config) {
  * ★ ถ้าจะเพิ่มกราฟใหม่ที่คลิกแล้วกรองได้ → เพิ่ม if อีก 1 บล็อก
  * -------------------------------------------------------------------------- */
 function handleChartClick(canvasId, label, datasetLabel) {
+  const selectionKey = [
+    canvasId,
+    String(label || ''),
+    String(datasetLabel || '')
+  ].join('|');
+
+  if (activeChartSelection === selectionKey) {
+    resetFilters();
+    return;
+  }
+
+  activeChartSelection = selectionKey;
+
   if (canvasId === 'yearLineChart') {
     document.getElementById('yearFilter').value = label;
     chartFilter.publishStatus = '';
@@ -829,6 +960,11 @@ function handleChartClick(canvasId, label, datasetLabel) {
 
   if (canvasId === 'indexDonutChart') {
     document.getElementById('indexFilter').value = label;
+    chartFilter.publishStatus = '';
+  }
+
+  if (canvasId === 'majorBarChart') {
+    document.getElementById('majorFilter').value = label;
     chartFilter.publishStatus = '';
   }
 
@@ -912,7 +1048,7 @@ function renderInlineLink(link) {
   if (!link || link === '-') return '';
 
   return `
-    <a class="inline-link-icon" href="${escapeHtml(link)}" target="_blank" rel="noopener" aria-label="เปิดลิงก์งานวิจัย" title="เปิดลิงก์งานวิจัย">
+    <a class="inline-link-icon" href="${escapeHtml(link)}" target="_blank" rel="noopener" aria-label="เปิดลิงก์งานวิจัยในแท็บใหม่" title="เปิดลิงก์งานวิจัยในแท็บใหม่">
       ↗
     </a>
   `;
@@ -938,10 +1074,33 @@ function getTotalPages() {
  *   เช่น หน้า 2, pageSize 20 → return รายการที่ index 20 ถึง 39
  * -------------------------------------------------------------------------- */
 function getPagedData() {
-  if (pageSize === 'all') return filteredData;
+  const sortedData = getSortedTableData();
+
+  if (pageSize === 'all') return sortedData;
 
   const start = (currentPage - 1) * pageSize;
   const end = start + pageSize;
 
-  return filteredData.slice(start, end);
+  return sortedData.slice(start, end);
+}
+
+function getSortedTableData() {
+  return filteredData
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => {
+      const yearA = getSortableYear(a.row.YEAR);
+      const yearB = getSortableYear(b.row.YEAR);
+
+      if (yearA !== yearB) return yearB - yearA;
+
+      return a.index - b.index;
+    })
+    .map(item => item.row);
+}
+
+function getSortableYear(value) {
+  const match = String(value || '').match(/\d+/);
+  const year = match ? Number(match[0]) : Number.NEGATIVE_INFINITY;
+
+  return Number.isFinite(year) ? year : Number.NEGATIVE_INFINITY;
 }

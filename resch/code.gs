@@ -15,11 +15,11 @@
 const CONFIG = {
   // ID ของ Google Sheet (ดูได้จาก URL ของชีต ส่วนระหว่าง /d/...../edit)
   // ★ ถ้าจะใช้ชีตอื่น → แก้ค่านี้
-  SPREADSHEET_ID: '1UDKqqeoXAtEVXQ8JHSOfTQkkULqjEwD1QeBJY0OIaDY',
+  SPREADSHEET_ID: '1dIU9L4Jf9XxPDpl0KFlKNCORfpZ66LAc1BNMYP6ZyFU',
 
   // ชื่อแท็บ (Sheet) ภายในไฟล์ที่เก็บข้อมูล
   // ★ ถ้าเปลี่ยนชื่อแท็บในไฟล์ Google Sheets → ต้องแก้ตรงนี้ให้ตรงกัน
-  SHEET_NAME: 'RESEARCH_DATA'
+  SHEET_NAME: 'RESEARCH'
 };
 
 /* --- doGet: จุดรับ request จากหน้าเว็บ ----------------------------------------
@@ -100,6 +100,8 @@ function normalizeResearchRow_(row) {
     YEAR: row['ปี พ.ศ.'] || row.YEAR_BE || row.YEAR || '',
     // ชื่อผู้วิจัย
     NAME: row.NAME || row.FULL_NAME || row['ชื่อผู้วิจัย'] || '',
+    // สาขาวิชา/กลุ่มวิชา
+    MAJOR: row.MAJOR || row.PROGRAM || row.DEPARTMENT || row['สาขาวิชา'] || row['สาขา'] || row['กลุ่มวิชา'] || '',
     // ชื่อเรื่อง/บทความ
     TITLE: row.TITLE || row['ชื่อเรื่อง'] || '',
     // วารสารที่ตีพิมพ์

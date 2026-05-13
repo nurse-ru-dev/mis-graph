@@ -78,38 +78,60 @@ body.is-loading {
   height: 14px;
 }
 
-/* กรอบหน้าหลัก – กว้างสูงสุด 1400px จัดกลาง
-   ★ อยากให้หน้าแคบ/กว้างขึ้น → แก้ค่า 1400px */
+/* กรอบหน้าหลัก – ใช้ความกว้างเต็มพื้นที่ เพื่อให้เหมาะกับการฝัง iframe */
 .app {
-  width: min(1400px, 100%);
-  margin: auto;
-  padding: 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0 40px 18px;
 }
 
-/* แถบหัวเรื่อง – พื้น gradient น้ำเงิน
+/* แถบหัวเรื่อง – พื้น gradient น้ำเงินแบบบาร์ยาว
    ★ อยากเปลี่ยนสีพื้น → แก้ตรง linear-gradient
    ★ อยากเปลี่ยนความโค้ง → แก้ border-radius */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   background: linear-gradient(135deg, var(--blue-main), var(--blue-light));
-  border-radius: 24px;
-  padding: 24px;
+  border-radius: 0;
+  padding: 8px 20px;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 18px;
-  box-shadow: 0 12px 30px rgba(13, 59, 102, 0.18);
-  border: 1px solid rgba(212, 160, 23, 0.35);
+  margin: 0 -40px 16px;
+  box-shadow: none;
+  border: none;
+  border-bottom: 3px solid var(--gold-main);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 255, 255, 0.62))
+    drop-shadow(0 1px 3px rgba(255, 255, 255, 0.34));
 }
 
 .header h1 {
   margin: 0;
-  font-size: 30px;
+  font-size: 22px;
   color: #ffffff;
+  line-height: 1.25;
 }
 
 .header p {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.86);
 }
 
@@ -117,13 +139,12 @@ body.is-loading {
    ★ อยากย้ายตำแหน่ง → แก้ right / bottom
    ★ อยากเปลี่ยนเป็นปุ่มปกติในเฮดเดอร์ → ลบ position:fixed ออก */
 .floating-reset-tools {
-  position: fixed;
-  right: 24px;
-  top: 24px;
-  z-index: 9999;
+  position: static;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 0 0 auto;
 }
 
 .header-loading-text {
@@ -158,10 +179,10 @@ body.is-loading {
 
 .reset-btn {
   background: var(--gold-main);
-  padding: 14px 22px;
+  padding: 10px 18px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .toggle-reset-btn:hover,
@@ -260,14 +281,14 @@ body.is-loading .kpi-card::after {
   color: var(--danger);
 }
 
-/* แถบตัวกรอง 4 ช่อง (สัดส่วน 1 : 1 : 1 : 2 — ช่องค้นหากว้างสุด)
+/* แถบตัวกรอง 5 ช่อง (สัดส่วน 1 : 1 : 1 : 1 : 2 — ช่องค้นหากว้างสุด)
    ★ ถ้าเพิ่ม/ลดตัวกรอง → ปรับ grid-template-columns ให้พอดีจำนวนช่อง */
 .filter-card {
   background: var(--card);
   border-radius: 20px;
   padding: 18px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 2fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
   gap: 14px;
   margin-bottom: 18px;
   box-shadow: 0 10px 24px rgba(13, 59, 102, 0.05);
@@ -334,21 +355,32 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.16);
 }
 
-/* กริดกราฟ – 2 คอลัมน์ x 2 แถว = 4 กราฟ
+/* กริดกราฟ – จอกว้างใช้ 12 คอลัมน์ เพื่อจัด 4 กราฟต่อแถว
    ★ ถ้าจะเพิ่มกราฟ → เพิ่ม <div class="chart-card"> ใน index.html */
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 16px;
 }
 
 .chart-card {
+  grid-column: span 3;
   background: var(--card);
   border-radius: 20px;
-  padding: 18px;
-  min-height: 330px;
+  padding: 14px;
+  min-height: 270px;
   box-shadow: 0 10px 24px rgba(13, 59, 102, 0.05);
   border: 1px solid var(--border);
+}
+
+.chart-card.wide {
+  grid-column: span 6;
+  min-height: 320px;
+}
+
+.chart-card.full-width {
+  grid-column: 1 / -1;
+  min-height: 330px;
 }
 
 body.is-loading .chart-card {
@@ -386,8 +418,8 @@ body.is-loading .chart-card::after {
 }
 
 .chart-card h3 {
-  margin: 0 0 12px;
-  font-size: 17px;
+  margin: 0 0 10px;
+  font-size: 15px;
   color: var(--blue-dark);
 }
 
@@ -396,6 +428,13 @@ body.is-loading .chart-card::after {
    ★ และอาจต้องเพิ่ม min-height ของ .chart-card ด้วย */
 .chart-card canvas {
   width: 100% !important;
+  height: 220px !important;
+  max-height: 220px;
+}
+
+.chart-card.wide canvas,
+.chart-card.full-width canvas {
+  height: 270px !important;
   max-height: 270px;
 }
 
@@ -459,6 +498,13 @@ body.is-loading .pagination-bar {
   overflow-x: auto;
   border-radius: 14px;
   border: 1px solid var(--border);
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.table-wrap.is-dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 
 /* ตาราง: บังคับความกว้างขั้นต่ำ 1180px (เลื่อนซ้าย-ขวาได้ในจอเล็ก)
@@ -513,6 +559,8 @@ td.title-cell {
   max-width: 430px;
   min-width: 430px;
   line-height: 1.45;
+  position: relative;
+  padding-right: 56px;
 }
 
 .researcher-name {
@@ -537,11 +585,36 @@ td.title-cell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
-  font-size: 12px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  margin-top: 0;
+  margin-left: 0;
+  border: 1px solid rgba(13, 59, 102, 0.18);
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue-main);
+  font-size: 22px;
   font-weight: 700;
   text-decoration: none;
-  vertical-align: top;
+  line-height: 1;
+  vertical-align: middle;
+  box-shadow: 0 6px 14px rgba(13, 59, 102, 0.08);
+  transition: 0.18s ease;
+}
+
+.inline-link-icon:hover,
+.inline-link-icon:focus-visible {
+  background: var(--blue-main);
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.inline-link-icon:active {
+  transform: scale(0.96);
 }
 
 .pagination-bar {
@@ -666,9 +739,21 @@ td a:hover {
    ★ ถ้าจะเปลี่ยนจุดตัด → แก้ค่า max-width
 ======================================================================= */
 @media (max-width: 1024px) {
-  .kpi-grid,
-  .chart-grid {
+  .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .chart-card,
+  .chart-card.wide {
+    grid-column: span 3;
+  }
+
+  .chart-card.full-width {
+    grid-column: 1 / -1;
   }
 
   .filter-card {
@@ -678,12 +763,19 @@ td a:hover {
 
 @media (max-width: 680px) {
   .app {
-    padding: 12px;
+    padding: 0 20px 14px;
   }
 
   .header {
     flex-direction: column;
     align-items: flex-start;
+    margin: 0 -20px 12px;
+    padding: 10px;
+  }
+
+  .header-logo {
+    width: 42px;
+    height: 42px;
   }
 
   .kpi-grid {
@@ -694,6 +786,12 @@ td a:hover {
   .chart-grid,
   .filter-card {
     grid-template-columns: 1fr;
+  }
+
+  .chart-card,
+  .chart-card.wide,
+  .chart-card.full-width {
+    grid-column: 1 / -1;
   }
 
   .kpi-card {
@@ -717,16 +815,4 @@ td a:hover {
     width: 100%;
     justify-content: flex-end;
   }
-}
-/* ส่วนท้ายหน้า (Footer) – ข้อความลิขสิทธิ์ + ผู้พัฒนา */
-.footer {
-  margin-top: 24px;
-  padding: 18px 12px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.footer p {
-  margin: 4px 0;
 }

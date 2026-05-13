@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard สถานะการเปิดสอน | คณะพยาบาลศาสตร์</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="subject.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-title">สถานะการเปิดสอนและการดำเนินการสอนรายวิชา</div>
+          <div class="brand-subtitle">คณะพยาบาลศาสตร์</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="toolbar card">
+        <div class="toolbar-left">
+          <div class="field-group">
+            <label for="filterAcademicYear">ปีการศึกษา</label>
+            <select id="filterAcademicYear">
+              <option value="all">ทั้งหมด</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="filterSemester">ภาคการศึกษา</label>
+            <select id="filterSemester">
+              <option value="all">ทั้งหมด</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="filterYearLevel">ชั้นปี</label>
+            <select id="filterYearLevel">
+              <option value="all">ทั้งหมด</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <div class="meta-line">
+            <span class="meta-label">แหล่งข้อมูล:</span>
+            <span class="meta-value" id="sheetInfo">Apps Script Web App</span>
+          </div>
+          <div class="meta-line">
+            <span class="meta-label">อัปเดตข้อมูล:</span>
+            <span class="meta-value" id="lastUpdated">-</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-strip card">
+        <div class="status-strip-left">
+          <div class="org-status-badge" id="orgStatusBadge">กำลังประเมินสถานะ</div>
+          <div class="org-status-text" id="orgStatusText">กำลังโหลดข้อมูล...</div>
+        </div>
+        <div class="status-strip-right" id="statusSummaryInline">-</div>
+      </section>
+
+      <section class="kpi-grid">
+        <article class="kpi-card kpi-blue">
+          <div class="kpi-label">วิชาทั้งหมด</div>
+          <div class="kpi-value" id="kpiTotalCourses">0</div>
+          <div class="kpi-unit">รายวิชา</div>
+        </article>
+
+        <article class="kpi-card kpi-green">
+          <div class="kpi-label">เปิดสอน</div>
+          <div class="kpi-value" id="kpiOffered">0</div>
+          <div class="kpi-unit">รายวิชา</div>
+        </article>
+
+        <article class="kpi-card kpi-orange">
+          <div class="kpi-label">สอนเสร็จสิ้น</div>
+          <div class="kpi-value" id="kpiCompleted">0</div>
+          <div class="kpi-unit">รายวิชา</div>
+        </article>
+
+        <article class="kpi-card kpi-red">
+          <div class="kpi-label">ค้างดำเนินการ</div>
+          <div class="kpi-value" id="kpiPending">0</div>
+          <div class="kpi-unit">รายวิชา</div>
+        </article>
+
+        <article class="kpi-card kpi-teal">
+          <div class="kpi-label">% ความก้าวหน้า</div>
+          <div class="kpi-value-row">
+            <div class="kpi-value" id="kpiProgress">0%</div>
+            <div class="kpi-trend" id="kpiProgressTrend">●</div>
+          </div>
+          <div class="kpi-unit">ของวิชาที่เปิดสอน</div>
+        </article>
+      </section>
+
+      <section class="exec-grid">
+        <article class="card exec-card exec-critical-card">
+          <div class="exec-card-head">
+            <div class="section-title">รายการที่ต้องติดตาม</div>
+            <div class="section-subtitle">Critical / Warning</div>
+          </div>
+          <div id="criticalSummary" class="critical-summary"></div>
+          <div id="watchList" class="watch-list"></div>
+        </article>
+
+        <article class="card exec-card exec-analysis-card">
+          <div class="exec-card-head">
+            <div class="section-title">สรุปวิเคราะห์เชิงบริหาร</div>
+            <div class="section-subtitle">Executive Insight</div>
+          </div>
+          <ul id="analysisList" class="analysis-list"></ul>
+        </article>
+      </section>
+
+      <section class="chart-grid">
+        <article class="card chart-card">
+          <div class="section-title">จำนวนรายวิชาตามชั้นปี</div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot dot-blue"></span>ทั้งหมด</span>
+            <span class="legend-item"><span class="legend-dot dot-green"></span>เปิดสอน</span>
+            <span class="legend-item"><span class="legend-dot dot-orange"></span>สอนเสร็จสิ้น</span>
+          </div>
+          <div id="yearChart" class="year-chart"></div>
+        </article>
+
+        <article class="card chart-card">
+          <div class="section-title">ร้อยละการสอนเสร็จสิ้นตามชั้นปี</div>
+          <div id="progressChart" class="progress-chart"></div>
+        </article>
+      </section>
+
+      <section class="card table-card">
+        <div class="table-header-row">
+          <div class="section-title">รายละเอียดรายวิชา</div>
+
+          <div class="year-tabs" id="yearTabs">
+            <button class="year-tab active" data-tab="all" type="button">ทั้งหมด</button>
+            <button class="year-tab" data-tab="1" type="button">ชั้นปี 1</button>
+            <button class="year-tab" data-tab="2" type="button">ชั้นปี 2</button>
+            <button class="year-tab" data-tab="3" type="button">ชั้นปี 3</button>
+            <button class="year-tab" data-tab="4" type="button">ชั้นปี 4</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ปีการศึกษา</th>
+                <th>ภาค</th>
+                <th>รหัสวิชา</th>
+                <th>กระบวนวิชา</th>
+                <th>หน่วยกิต</th>
+                <th>ชั้นปี</th>
+                <th>เปิดสอน</th>
+                <th>สอนเสร็จสิ้น</th>
+                <th>สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="courseTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="subject.js"></script>
+</body>
+</html>

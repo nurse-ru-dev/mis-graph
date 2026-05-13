@@ -29,9 +29,12 @@
          ★ ปุ่ม "รีเซ็ตตัวกรอง" ลอยอยู่ที่มุมขวาล่าง (กำหนดใน style.css)
          ============================================================ -->
     <header class="header">
-      <div>
-        <h1>ระบบรายงานข้อมูลการเผยแพร่งานวิจัย</h1>
-        <p>คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+      <div class="header-brand">
+        <img class="header-logo" src="Logo.png" alt="ตราคณะพยาบาลศาสตร์" />
+        <div>
+          <h1>ระบบรายงานข้อมูลการเผยแพร่งานวิจัย</h1>
+          <p>คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+        </div>
       </div>
 
       <div id="floatingResetTools" class="floating-reset-tools">
@@ -71,7 +74,7 @@
     </section>
 
     <!-- ===== แถบตัวกรอง (Filter Card) =============================
-         มี 3 dropdown + 1 ช่องค้นหา
+         มี 4 dropdown + 1 ช่องค้นหา
          รายการในแต่ละ dropdown ถูกเติมอัตโนมัติด้วย initFilters() ใน app.js
          ★ ถ้าจะเพิ่มตัวกรองใหม่ (เช่น "ทุนวิจัย") →
             1. เพิ่ม <div class="filter-group"> + <select id="..."> ตรงนี้
@@ -100,6 +103,13 @@
         </select>
       </div>
 
+      <div class="filter-group">
+        <label>สาขาวิชา</label>
+        <select id="majorFilter">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </div>
+
       <div class="filter-group search-box">
         <label>ค้นหา</label>
         <!-- ค้นหาด้วยข้อความ — ตรวจหลายคอลัมน์พร้อมกัน (ดู applyFilters() ใน app.js) -->
@@ -107,7 +117,7 @@
       </div>
     </section>
 
-    <!-- ===== กราฟ 4 ชาร์ต (Charts) ================================
+    <!-- ===== กราฟ Dashboard (Charts) ================================
          ทุก <canvas> จะถูก Chart.js วาดข้อมูลเข้าไป (ดู renderCharts() ใน app.js)
             • yearLineChart   → กราฟเส้น แนวโน้มจำนวนวิจัยรายปี
             • indexBarChart   → กราฟแท่งสะสม แยกตามฐานข้อมูล×ปี
@@ -118,12 +128,12 @@
          ★ คลิกที่กราฟแต่ละจุดจะกรองข้อมูลอัตโนมัติ (handleChartClick ใน app.js)
          ============================================================ -->
     <section class="chart-grid">
-      <div class="chart-card wide">
+      <div class="chart-card">
         <h3>แนวโน้มจำนวนงานวิจัยรายปี</h3>
         <canvas id="yearLineChart"></canvas>
       </div>
 
-      <div class="chart-card wide">
+      <div class="chart-card">
         <h3>จำนวนงานวิจัยแยกตามฐานข้อมูลรายปี</h3>
         <canvas id="indexBarChart"></canvas>
       </div>
@@ -138,14 +148,19 @@
         <canvas id="publishPieChart"></canvas>
       </div>
 
-      <div class="chart-card wide">
+      <div class="chart-card">
+        <h3>สัดส่วนงานวิจัยที่มีทุน / ไม่มีทุน</h3>
+        <canvas id="fundingStatusChart"></canvas>
+      </div>
+
+      <div class="chart-card">
         <h3>จำนวนเงินทุนแยกรายปี</h3>
         <canvas id="fundingAmountChart"></canvas>
       </div>
 
-      <div class="chart-card">
-        <h3>สัดส่วนงานวิจัยที่มีทุน / ไม่มีทุน</h3>
-        <canvas id="fundingStatusChart"></canvas>
+      <div class="chart-card wide">
+        <h3>จำนวนงานวิจัยแยกตามสาขาวิชา</h3>
+        <canvas id="majorBarChart"></canvas>
       </div>
     </section>
 
@@ -207,14 +222,6 @@
     </div>
   </div>
 </section>
-
-<!-- ===== ส่วนท้ายหน้า (Footer) ============================
-     ★ ถ้าจะเปลี่ยนปี/ผู้พัฒนา → แก้ข้อความใน <p> ตรงนี้
-     ======================================================== -->
-<footer class="footer">
-  <p>© 2026 Faculty of Nursing, Ramkhamhaeng University</p>
-  <p>พัฒนาโดย อาจารย์สิญาธร พลเจริญไพศาล</p>
-</footer>
 
   </div>
 
