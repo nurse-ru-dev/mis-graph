@@ -6,7 +6,7 @@
   <title>แดชบอร์ดอาจารย์ Interactive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="lecturers.css" />
 </head>
 <body>
@@ -24,24 +24,39 @@
       <div>
         <h1 class="page-title">สัดส่วนอาจารย์ต่อนักศึกษา</h1>
         <p class="page-subtitle">คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+        <p class="update-line" id="lastUpdated">อัปเดตข้อมูล: -</p>
       </div>
       <div class="topbar-actions">
-        <button class="ghost-btn" id="btnRefresh">รีเฟรชข้อมูลจริง</button>
+        <button class="ghost-btn refresh-fab" id="btnRefresh" aria-label="รีเฟรชข้อมูลจริง" title="รีเฟรชข้อมูลจริง">↻</button>
       </div>
     </header>
 
-    <section class="hero-panel">
-      <div class="hero-text">
-        <div class="eyebrow">Lecturer Dashboard</div>
-        <h2>สัดส่วนอาจารย์ต่อนักศึกษา ตามเกณฑ์ 1:8</h2>
-        <p>ทดลองเพิ่มอาจารย์ ปรับจำนวนนักศึกษา และจำลองรับนักศึกษาใหม่ได้ทันที</p>
-      </div>
-      <div class="hero-target">
-        <div class="target-label">เกณฑ์เป้าหมาย</div>
-        <div class="target-value">1 : 8</div>
-      </div>
+    <section class="top-insight-row">
+      <section class="hero-panel">
+        <div class="hero-text">
+          <div class="eyebrow">Lecturer Dashboard</div>
+          <h2>สัดส่วนอาจารย์ต่อนักศึกษา ตามเกณฑ์ 1:8</h2>
+          <p>ทดลองเพิ่มอาจารย์ ปรับจำนวนนักศึกษา และจำลองรับนักศึกษาใหม่ได้ทันที</p>
+        </div>
+        <div class="hero-target">
+          <div class="target-label">เกณฑ์เป้าหมาย</div>
+          <div class="target-value">1 : 8</div>
+        </div>
+      </section>
+
+      <article class="panel ratio-panel">
+        <div class="panel-head">
+          <h3>สัดส่วนอาจารย์ต่อนักศึกษา</h3>
+          <span class="panel-tag" id="gaugeStatusTag">1 : X</span>
+        </div>
+        <div class="gauge-box-simple">
+          <div class="gauge-value-big" id="gaugeRatioText">-</div>
+          <div class="gauge-subtext" id="gaugeStatusText">เกณฑ์เป้าหมายไม่เกิน 1 : 8</div>
+        </div>
+      </article>
     </section>
 
+    <section class="dashboard-workspace">
     <section class="kpi-grid">
       <article class="kpi-card">
         <div class="kpi-label">จำนวนอาจารย์ปัจจุบัน</div>
@@ -66,7 +81,7 @@
       </article>
     </section>
 
-<section class="content-grid two-col interactive-row">
+<section class="content-grid scenario-row">
   <article class="panel scenario-panel">
     <div class="panel-head">
       <h3>โหมดจำลองสถานการณ์</h3>
@@ -111,17 +126,8 @@
     </div>
   </article>
 
-  <article class="panel ratio-panel">
-    <div class="panel-head">
-      <h3>มาตรวัดสัดส่วนอาจารย์ต่อนักศึกษา</h3>
-      <span class="panel-tag">1 : X</span>
-    </div>
-    <div class="gauge-box-simple">
-      <div class="gauge-value-big" id="gaugeRatioText">-</div>
-      <div class="gauge-subtext" id="gaugeStatusText">เกณฑ์เป้าหมายไม่เกิน 1 : 8</div>
-    </div>
-  </article>
 </section>
+    </section>
   </main>
 
   <script src="lecturers.js" defer></script>

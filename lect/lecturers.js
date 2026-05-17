@@ -79,6 +79,7 @@ function hydrateDashboard(data) {
   state.scenario.students = Number(data.kpis.totalCurrentStudents || 0);
   state.scenario.plannedIntake = Number(data.kpis.plannedNewIntake || 0);
   syncInputsWithScenario();
+  renderUpdatedAt(data);
   renderAll();
 }
 
@@ -158,11 +159,35 @@ function renderKpis(kpis) {
 function renderGauge(kpis) {
   setText('gaugeRatioText', kpis.currentRatioDisplay);
 
-  const status = kpis.currentRatioValue <= CONFIG.TARGET_RATIO
-    ? 'อยู่ในเกณฑ์มาตรฐาน'
-    : 'เกินเกณฑ์มาตรฐาน';
+  const hasLecturers = Number(kpis.totalActiveLecturers || 0) > 0;
+  const isGood = hasLecturers && kpis.currentRatioValue <= CONFIG.TARGET_RATIO;
+  const status = !hasLecturers
+    ? 'ไม่มีข้อมูลอาจารย์'
+    : isGood
+      ? 'อยู่ในเกณฑ์มาตรฐาน'
+      : 'เกินเกณฑ์มาตรฐาน';
 
   setText('gaugeStatusText', `เกณฑ์เป้าหมายไม่เกิน 1 : 8 • สถานะ: ${status}`);
+  setText('gaugeStatusTag', isGood ? 'ปกติ' : hasLecturers ? 'เกินเกณฑ์' : 'รอข้อมูล');
+
+  const panel = document.querySelector('.ratio-panel');
+  if (panel) {
+    panel.classList.remove('status-good', 'status-risk', 'status-empty');
+    panel.classList.add(!hasLecturers ? 'status-empty' : isGood ? 'status-good' : 'status-risk');
+  }
+}
+
+function renderUpdatedAt(data) {
+  const value = data.generatedAt || data.updatedAt || data.lastUpdated || null;
+  const date = value ? new Date(value) : new Date();
+  const text = Number.isNaN(date.getTime())
+    ? String(value)
+    : new Intl.DateTimeFormat('th-TH', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(date);
+
+  setText('lastUpdated', `อัปเดตข้อมูล: ${text}`);
 }
 
 function stepInput(target, step) {
