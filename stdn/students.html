@@ -6,54 +6,139 @@
   <title>แดชบอร์ดนักศึกษา</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="students.css" />
 </head>
 <body>
-  <div id="loadingState" class="loading-overlay" style="display:none;">
-    <div class="loading-box">
-      <div class="spinner"></div>
-      <div>กำลังโหลดข้อมูล...</div>
-    </div>
-  </div>
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">ภาพรวมข้อมูลนักศึกษา</h1>
+        <p class="page-subtitle">คณะพยาบาลศาสตร์ มหาวิทยาลัยรามคำแหง</p>
+        <p id="lastUpdated" class="update-line">กำลังโหลดข้อมูล...</p>
+      </div>
 
-  <div id="errorState" class="error-banner" style="display:none;"></div>
-  <main class="main-content compact-page">
-  <header class="topbar compact-topbar">
-    <div>
-      <h1 class="page-title small-title">ข้อมูลนักศึกษา</h1>
-    </div>
+      <div class="topbar-actions">
+        <button id="btnRefresh" class="ghost-btn refresh-fab" type="button" title="รีเฟรชข้อมูล" aria-label="รีเฟรชข้อมูล">↻</button>
+      </div>
+    </header>
 
-    <div class="topbar-actions">
-      <button class="ghost-btn small-btn" id="btnRefresh">รีเฟรชข้อมูลจริง</button>
-    </div>
-  </header>
-  <section class="kpi-grid">
-    <article class="kpi-card">
-      <div class="kpi-label">จำนวนนักศึกษาปัจจุบัน</div>
-      <div class="kpi-value" id="kpiStudents">-</div>
-    </article>
-  </section>
-<section class="content-grid two-col">
-  <!-- ซ้าย -->
-  <article class="panel">
-    <div class="panel-head">
-      <h3>จำนวนนักศึกษาแต่ละชั้นปี</h3>
-      <span class="panel-tag">Current</span>
-    </div>
-    <div class="vertical-chart" id="cohortChart"></div>
-  </article>
+    <section id="alertBox" class="alert hidden"></section>
 
-  <!-- ขวา -->
-  <article class="panel">
-    <div class="panel-head">
-      <h3>การคงอยู่ของแต่ละชั้นปี</h3>
-      <span class="panel-tag">Retention</span>
-    </div>
-    <div class="retention-chart" id="retentionChart"></div>
-  </article>
-</section>
-</main>
+    <section class="cards-grid" aria-label="สรุปจำนวนนักศึกษา">
+      <button class="stat-card" type="button" onclick="selectDashboardGroup('currentAll')">
+        <p>นักศึกษาปัจจุบัน</p>
+        <h2 id="totalCurrent">-</h2>
+      </button>
+
+      <button class="stat-card" type="button" onclick="selectDashboardGroup('currentClass', '1')">
+        <p>ปี 1</p>
+        <h2 id="year1">-</h2>
+      </button>
+
+      <button class="stat-card" type="button" onclick="selectDashboardGroup('currentClass', '2')">
+        <p>ปี 2</p>
+        <h2 id="year2">-</h2>
+      </button>
+
+      <button class="stat-card" type="button" onclick="selectDashboardGroup('currentClass', '3')">
+        <p>ปี 3</p>
+        <h2 id="year3">-</h2>
+      </button>
+
+      <button class="stat-card" type="button" onclick="selectDashboardGroup('currentClass', '4')">
+        <p>ปี 4</p>
+        <h2 id="year4">-</h2>
+      </button>
+
+      <button class="stat-card gold" type="button" onclick="selectDashboardGroup('inactiveAll')">
+        <p>พ้นสภาพ/จบ/ลาออก</p>
+        <h2 id="totalInactive">-</h2>
+      </button>
+
+      <button class="stat-card success" type="button" onclick="selectDashboardGroup('graduated')">
+        <p>สำเร็จการศึกษา</p>
+        <h2 id="totalGraduated">-</h2>
+      </button>
+    </section>
+
+    <section id="selectionPanel" class="selection-panel hidden" aria-live="polite">
+      <div>
+        <p class="eyebrow">INTERACTIVE SELECTION</p>
+        <h2 id="selectionTitle">เลือกข้อมูลจากกราฟ</h2>
+        <p id="selectionSubtitle">คลิกการ์ด แท่งกราฟ จุดแนวโน้ม หรือสถานะ เพื่อดูจำนวนของกลุ่มนั้น</p>
+      </div>
+      <button class="clear-btn" type="button" onclick="clearDashboardSelection()">ล้างการเลือก</button>
+    </section>
+
+    <section class="dashboard-charts" aria-label="กราฟข้อมูลนักศึกษา">
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <h2>เปรียบเทียบจำนวนนักศึกษาแต่ละชั้นปี</h2>
+          <p>นับเฉพาะนักศึกษาปัจจุบัน</p>
+        </div>
+        <div id="classYearChart" class="chart-body"></div>
+      </article>
+
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <h2>ร้อยละการคงอยู่ของนักศึกษาแต่ละชั้นปี</h2>
+          <p>เปรียบเทียบจำนวนแรกกับจำนวนที่คงอยู่</p>
+        </div>
+        <div id="retentionChart" class="chart-body"></div>
+      </article>
+
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <h2>แนวโน้มนักศึกษาเข้าใหม่ 5 ปีย้อนหลัง</h2>
+          <p>นับจากปีรับเข้าหรือรุ่นเมื่อไม่มีปีรับเข้า</p>
+        </div>
+        <div id="admissionTrendChart" class="chart-body"></div>
+      </article>
+
+      <article class="panel chart-panel status-decision-panel">
+        <div class="panel-header">
+          <h2>สถานะนักศึกษาแยกตามชั้นปี</h2>
+          <p>รวมสถานะ active และ inactive เพื่อดูภาพรวมการคงอยู่</p>
+        </div>
+        <div class="status-dashboard-layout">
+          <div id="statusChart" class="chart-body"></div>
+          <aside id="executiveSummary" class="executive-summary"></aside>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel student-table-panel" aria-label="ตารางรายชื่อนักศึกษา">
+      <div class="panel-header table-header">
+        <div>
+          <h2 id="studentTableTitle">รายชื่อนักศึกษาปัจจุบันทั้งหมด</h2>
+          <p id="studentTableSubtitle">คลิกการ์ดหรือกราฟเพื่อกรองรายชื่อในตารางนี้</p>
+        </div>
+        <span id="studentTableCount" class="table-count">0 คน</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>รหัสนักศึกษา</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>ชั้นปี</th>
+              <th>รุ่น/ปีรับเข้า</th>
+              <th>สถานะ</th>
+              <th>อีเมล</th>
+              <th>ชุดข้อมูล</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr>
+              <td colspan="7" class="table-empty">กำลังโหลดข้อมูล...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
   <script src="students.js" defer></script>
 </body>
