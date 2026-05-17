@@ -260,7 +260,7 @@ function renderRetentionChart(elementId, rows) {
         <div class="grid-lines">${ticks.map(() => '<span></span>').join('')}</div>
         <div class="vertical-bars grouped">
           ${rows.map(row => `
-            <div class="vbar-group" title="${escapeAttr(`${row.label}: คงอยู่ ${row.remaining} จาก ${row.initial} คน (${row.percent}%)`)}">
+            <div class="vbar-group" title="${escapeAttr(`${row.label}: คงอยู่ ${row.remaining} จาก ${row.initial} คน (${formatPercent(row.percent)}%)`)}">
               ${renderGroupedVerticalBar(row.initial, axisMax, 'จำนวนแรก', row.label, 'initial', percentOf(row.initial, row.initial || max))}
               ${renderGroupedVerticalBar(row.remaining, axisMax, 'คงอยู่', row.label, 'remaining', row.percent)}
               <span class="vbar-label">${escapeHtml(row.label)}</span>
@@ -278,14 +278,14 @@ function renderRetentionChart(elementId, rows) {
 
 function renderGroupedVerticalBar(value, max, series, label, type, percent) {
   const height = Math.max((value / max) * 100, value > 0 ? 4 : 0);
-  const tooltip = `${label} ${series}: ${value} คน (${percent}%)`;
+  const tooltip = `${label} ${series}: ${value} คน (${formatPercent(percent)}%)`;
   const classYear = label.replace('ปี ', '');
   const group = type === 'initial' ? 'allClass' : 'currentClass';
 
   return `
     <button class="vbar mini ${type}" style="--bar-height:${height}%" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" onclick="selectDashboardGroup('${group}', '${escapeAttr(classYear)}')">
       <span class="vbar-value">${formatNumber(value)}</span>
-      <span class="vbar-percent">${percent}%</span>
+      <span class="vbar-percent">${formatPercent(percent)}%</span>
       <span class="vbar-fill"></span>
     </button>
   `;
@@ -372,7 +372,7 @@ function renderStatusByClassChart(elementId, rows) {
                     colorIndex++;
                   }
                   const percent = percentOf(item.count, row.total);
-                  const tooltip = `${row.label} ${item.status}: ${item.count} คน (${percent}%)`;
+                  const tooltip = `${row.label} ${item.status}: ${item.count} คน (${formatPercent(percent)}%)`;
 
                   return `
                     <button class="status-segment" style="width:${Math.max(percent, item.count > 0 ? 6 : 0)}%;background:${statusColorMap[item.status]}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" onclick="selectDashboardGroup('statusClass', '${escapeAttr(row.classYear)}', '${escapeAttr(item.status)}')">
@@ -384,14 +384,14 @@ function renderStatusByClassChart(elementId, rows) {
               <div class="status-breakdown">
                 ${statusEntries.map(item => {
                   const percent = percentOf(item.count, row.total);
-                  const tooltip = `${row.label} ${item.status}: ${item.count} คน (${percent}%)`;
+                  const tooltip = `${row.label} ${item.status}: ${item.count} คน (${formatPercent(percent)}%)`;
 
                   return `
                     <button class="status-mini-item" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" onclick="selectDashboardGroup('statusClass', '${escapeAttr(row.classYear)}', '${escapeAttr(item.status)}')">
                       <span class="status-dot" style="background:${statusColorMap[item.status]}"></span>
                       <span>${escapeHtml(item.status)}</span>
                       <strong>${formatNumber(item.count)}</strong>
-                      <small>${percent}%</small>
+                      <small>${formatPercent(percent)}%</small>
                     </button>
                   `;
                 }).join('')}
@@ -422,11 +422,11 @@ function renderExecutiveSummary(current, inactive, statusByClassRows) {
     <h3>สรุปเพื่อการตัดสินใจ</h3>
     <p>
       ปัจจุบันมีนักศึกษาที่คงอยู่ในระบบ ${formatNumber(totalCurrent)} คน จากรายชื่อทั้งหมด ${formatNumber(totalAll || totalCurrent)} คน
-      คิดเป็นอัตราคงอยู่ประมาณ ${retention}% โดยชั้นปีที่มีรายชื่อมากที่สุดคือ ${escapeHtml(largestClass?.label || '-')}
+      คิดเป็นอัตราคงอยู่ประมาณ ${formatPercent(retention)}% โดยชั้นปีที่มีรายชื่อมากที่สุดคือ ${escapeHtml(largestClass?.label || '-')}
       จำนวน ${formatNumber(largestClass?.total || 0)} คน
     </p>
     <p>
-      กลุ่มที่สำเร็จการศึกษามี ${formatNumber(graduated)} คน หรือประมาณ ${graduateRate}% ของรายชื่อทั้งหมด
+      กลุ่มที่สำเร็จการศึกษามี ${formatNumber(graduated)} คน หรือประมาณ ${formatPercent(graduateRate)}% ของรายชื่อทั้งหมด
       และกลุ่มที่ควรติดตามเป็นพิเศษมี ${formatNumber(riskCount)} คน
     </p>
     <div class="summary-actions">
@@ -577,7 +577,13 @@ function buildAxisTicks(max) {
 }
 
 function percentOf(value, total) {
-  return total > 0 ? Math.round((Number(value || 0) / total) * 100) : 0;
+  if (total <= 0) return 0;
+  return Number(((Number(value || 0) / total) * 100).toFixed(2));
+}
+
+function formatPercent(value) {
+  const number = Number(value || 0);
+  return number.toFixed(2).replace(/\.00$/, '');
 }
 
 function getStatusValue(student, inactive = false) {
